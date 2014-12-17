@@ -24,6 +24,9 @@ var (
 
 	pdToken  = os.Getenv("PAGERDUTY_TOKEN")
 	pdClient *pager.Pager
+
+	interval = 30 * time.Second
+	allotment = 10 * time.Second
 )
 
 func main() {
@@ -39,7 +42,7 @@ func main() {
 	}
 
 	pctx := context.Background()
-	t := time.NewTicker(30 * time.Second)
+	t := time.NewTicker(interval)
 
 	incidents := map[string]string{}
 	urls := []*url.URL{}
@@ -50,6 +53,7 @@ func main() {
 		}
 		urls = append(urls, u)
 	}
+	offset := int(interval - allotment) / len(urls)
 
 	type urs struct {
 		u  *url.URL
@@ -58,11 +62,14 @@ func main() {
 	ch := make(chan urs)
 
 	for {
-		ctx, _ := context.WithTimeout(pctx, 10*time.Second)
-		for _, u := range urls {
-			go func(u *url.URL) {
+
+		for i, u := range urls {
+			go func(i int, u *url.URL) {
+				time.Sleep(time.Duration(offset * i))
+
+				ctx, _ := context.WithTimeout(pctx, allotment)
 				ch <- urs{u, monitor(ctx, u)}
-			}(u)
+			}(i, u)
 		}
 
 		for range urls {
