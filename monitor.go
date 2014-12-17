@@ -111,7 +111,15 @@ func monitor(ctx context.Context, u *url.URL) results {
 		wg.Add(1)
 		go func(ip string) {
 			cctx, _ := context.WithTimeout(ctx, 5*time.Second)
-			rs[ip] = check(cctx, u, ip)
+			err := check(cctx, u, ip)
+			if err != nil {
+				dctx, _ := context.WithTimeout(ctx, 5*time.Second)
+				if check(dctx, u, ip) == nil {
+					err = nil
+				}
+			}
+
+			rs[ip] = err
 			wg.Done()
 		}(ip)
 	}
