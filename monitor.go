@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"code.google.com/p/go.net/context"
-	"github.com/miekg/dns"
-	"github.com/stvp/pager"
+	"github.com/benburkert/lemma-monitor/Godeps/_workspace/src/code.google.com/p/go.net/context"
+	"github.com/benburkert/lemma-monitor/Godeps/_workspace/src/github.com/miekg/dns"
+	"github.com/benburkert/lemma-monitor/Godeps/_workspace/src/github.com/stvp/pager"
 )
 
 var (
@@ -51,7 +51,7 @@ func main() {
 	}
 
 	type urs struct {
-		u *url.URL
+		u  *url.URL
 		rs results
 	}
 	ch := make(chan urs)
@@ -65,9 +65,8 @@ func main() {
 		}
 
 		for range urls {
-			urs := <- ch
+			urs := <-ch
 			u, rs := urs.u, urs.rs
-
 
 			if rs.IsSuccess() {
 				delete(incidents, u.String())

@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/benburkert/lemma-monitor",
+	"GoVersion": "go1.4",
+	"Packages": [
+		"./"
+	],
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/go.net/context",
+			"Comment": "null-143",
+			"Rev": "6a58d15273e127ff2697fa5a848435af0ea1255d"
+		},
+		{
+			"ImportPath": "github.com/miekg/dns",
+			"Rev": "2c1a31d550949c6df1b7cc6a758d18584b0b071e"
+		},
+		{
+			"ImportPath": "github.com/stvp/pager",
+			"Rev": "735d6d5c3fd3b5e148b5ef625e822d5fe4f68376"
+		}
+	]
+}
