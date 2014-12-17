@@ -211,9 +211,9 @@ func doCheck(u *url.URL, ip string) error {
 		Dial: func(_, _ string) (net.Conn, error) {
 			switch u.Scheme {
 			case "https":
-				return nolinger(net.DialTimeout("tcp", net.JoinHostPort(ip, "443"), 2*time.Second))
+				return dialTCP(net.JoinHostPort(ip, "443"))
 			case "http":
-				return nolinger(net.DialTimeout("tcp", net.JoinHostPort(ip, "80"), 2*time.Second))
+				return dialTCP(net.JoinHostPort(ip, "80"))
 			default:
 				return nil, errors.New("invalid scheme for " + u.String())
 			}
@@ -233,9 +233,15 @@ func doCheck(u *url.URL, ip string) error {
 	return nil
 }
 
-func nolinger(conn net.Conn, err error) (net.Conn, error) {
+var dialer = net.Dialer{
+	Timeout: 2 * time.Second,
+	KeepAlive: 0,
+}
+
+func dialTCP(address string) (net.Conn, error) {
+	conn, err := dialer.Dial("tcp", address)
 	if err != nil {
-		return conn, err
+		return nil, err
 	}
 
 	tconn := conn.(*net.TCPConn)
