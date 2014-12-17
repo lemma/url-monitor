@@ -206,12 +206,13 @@ func doCheck(u *url.URL, ip string) error {
 		TLSClientConfig: &tls.Config{
 			ServerName: u.Host,
 		},
+		DisableKeepAlives: true,
 		Dial: func(_, _ string) (net.Conn, error) {
 			switch u.Scheme {
 			case "https":
-				return net.DialTimeout("tcp", net.JoinHostPort(ip, "443"), 2*time.Second)
+				return nolinger(net.DialTimeout("tcp", net.JoinHostPort(ip, "443"), 2*time.Second))
 			case "http":
-				return net.DialTimeout("tcp", net.JoinHostPort(ip, "80"), 2*time.Second)
+				return nolinger(net.DialTimeout("tcp", net.JoinHostPort(ip, "80"), 2*time.Second))
 			default:
 				return nil, errors.New("invalid scheme for " + u.String())
 			}
@@ -229,6 +230,16 @@ func doCheck(u *url.URL, ip string) error {
 		return errors.New("expected 200 OK, got " + resp.Status)
 	}
 	return nil
+}
+
+func nolinger(conn net.Conn, err error) (net.Conn, error) {
+	if err != nil {
+		return conn, err
+	}
+
+	tconn := conn.(*net.TCPConn)
+	tconn.SetLinger(0)
+	return tconn, err
 }
 
 type results map[string]error
