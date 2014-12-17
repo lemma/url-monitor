@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -84,7 +85,13 @@ func main() {
 }
 
 func alert(u *url.URL, rs results, incident string) (string, error) {
-	description := fmt.Sprintf("FAILURE for %s monitor", u)
+	hosts := []string{}
+	for k := range rs {
+		hosts = append(hosts, k)
+	}
+	location := strings.Join(hosts, ",")
+
+	description := fmt.Sprintf("FAILURE for %s monitor on %s", u, location)
 	details := map[string]interface{}{}
 	for k, err := range rs {
 		if err != nil {
@@ -212,13 +219,14 @@ func doCheck(u *url.URL, ip string) error {
 	}
 
 	client := http.Client{Transport: tr}
-	response, err := client.Get(u.String())
+	resp, err := client.Get(u.String())
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
-	if response.StatusCode != 200 {
-		return errors.New("expected 200 OK, got " + response.Status)
+	if resp.StatusCode != 200 {
+		return errors.New("expected 200 OK, got " + resp.Status)
 	}
 	return nil
 }
