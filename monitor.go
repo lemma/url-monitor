@@ -86,8 +86,10 @@ func main() {
 
 func alert(u *url.URL, rs results, incident string) (string, error) {
 	hosts := []string{}
-	for k := range rs {
-		hosts = append(hosts, k)
+	for k, err := range rs {
+		if err != nil {
+			hosts = append(hosts, k)
+		}
 	}
 	location := strings.Join(hosts, ",")
 
