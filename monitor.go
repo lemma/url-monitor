@@ -241,7 +241,9 @@ var dialer = net.Dialer{
 func dialTCP(address string) (net.Conn, error) {
 	conn, err := dialer.Dial("tcp", address)
 	if err != nil {
-		return nil, err
+		if conn, err = dialer.Dial("tcp", address); err != nil {
+			return nil, err
+		}
 	}
 
 	tconn := conn.(*net.TCPConn)
