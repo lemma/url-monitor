@@ -25,12 +25,14 @@ var (
 	pdToken  = os.Getenv("PAGERDUTY_TOKEN")
 	pdClient *pager.Pager
 
-	interval = 30 * time.Second
+	interval  = 30 * time.Second
 	allotment = 10 * time.Second
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	surls := os.Args[1:]
+	surls = append(surls, strings.Split(os.Getenv("URLS"), ",")...)
+	if len(surls) == 0 {
 		help()
 		os.Exit(1)
 	}
@@ -46,14 +48,14 @@ func main() {
 
 	incidents := map[string]string{}
 	urls := []*url.URL{}
-	for _, s := range os.Args[1:] {
+	for _, s := range surls {
 		u, err := url.Parse(s)
 		if err != nil {
 			fatal(err)
 		}
 		urls = append(urls, u)
 	}
-	offset := int(interval - allotment) / len(urls)
+	offset := int(interval-allotment) / len(urls)
 
 	type urs struct {
 		u  *url.URL
@@ -234,7 +236,7 @@ func doCheck(u *url.URL, ip string) error {
 }
 
 var dialer = net.Dialer{
-	Timeout: 2 * time.Second,
+	Timeout:   2 * time.Second,
 	KeepAlive: 0,
 }
 
